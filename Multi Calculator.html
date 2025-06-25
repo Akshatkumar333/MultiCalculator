@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi Calculator - Percentage, GST, Profit/Loss</title>
+    
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-YOUR_PUBLISHER_ID"></script>
+    <script>
+        (adsbygoogle = window.adsbygoogle || []).push({
+            google_ad_client: "ca-pub-YOUR_PUBLISHER_ID",
+            enable_page_level_ads: true
+        });
+    </script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+
+        body.dark {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.1);
+        }
+
+        .calculator-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 30px;
+            justify-content: center;
+        }
+
+        .tab-button {
+            padding: 12px 24px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            border-radius: 25px;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .tab-button.active {
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .tab-button:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-1px);
+        }
+
+        .calculator-panel {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        .calculator-panel.active {
+            display: block;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .calculator-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        /* Ad Container Styles */
+        .ad-container {
+            margin: 25px auto;
+            padding: 15px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            text-align: center;
+            min-height: 90px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .dark .ad-container {
+            background: rgba(0,0,0,0.2);
+        }
+        
+        .ad-label {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        /* Cookie Consent Styles */
+        .cookie-consent {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #2b2d42;
+            color: white;
+            padding: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .cookie-consent.show {
+            transform: translateY(0);
+        }
+        
+        .cookie-consent p {
+            margin: 0 0 10px 0;
+            flex: 1 1 100%;
+            font-size: 0.9rem;
+        }
+        
+        .cookie-btn {
+            background: #4361ee;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        
+        .cookie-btn.decline {
+            background: transparent;
+            border: 1px solid #666;
+        }
+
+        @media (max-width: 768px) {
+            .calculator-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .tab-button {
+                padding: 10px 16px;
+                font-size: 0.8rem;
+            }
+
+            .cookie-consent {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .cookie-btn {
+                margin: 5px 0;
+                width: 100%;
+            }
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .result-panel {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .result-title {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+
+        .result-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .copy-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .formula-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .formula-box h4 {
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .formula-box p {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .multiple-results {
+            display: grid;
+            gap: 15px;
+        }
+
+        .result-item {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .result-item h4 {
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            opacity: 0.9;
+        }
+
+        .result-item .value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .profit { color: #10b981; }
+        .loss { color: #ef4444; }
+        .neutral { color: #6b7280; }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    
+    <div class="container">
+        <!-- Top Ad -->
+        <div class="ad-container">
+            <div class="ad-label">Advertisement</div>
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-YOUR_PUBLISHER_ID"
+                 data-ad-slot="YOUR_TOP_AD_SLOT"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+            <script>
+                (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+        </div>
+        
+        <div class="header">
+            <h1>🧮 Multi Calculator</h1>
+            <p>Calculate percentages, GST, and profit/loss quickly and accurately</p>
+        </div>
+
+        <div class="calculator-tabs">
+            <button class="tab-button active" onclick="showCalculator('percentage')">X% of Y</button>
+            <button class="tab-button" onclick="showCalculator('change')">% Change</button>
+            <button class="tab-button" onclick="showCalculator('final')">Final Value</button>
+            <button class="tab-button" onclick="showCalculator('gst')">GST Calculator</button>
+            <button class="tab-button" onclick="showCalculator('profit')">Profit/Loss</button>
+        </div>
+
+        <!-- Percentage Calculator -->
+        <div id="percentage" class="calculator-panel active">
+            <div class="calculator-grid">
+                <div>
+                    <h2>Calculate X% of Y</h2>
+                    <div class="input-group">
+                        <label>Percentage (%)</label>
+                        <input type="number" id="percentage-input" placeholder="Enter percentage (e.g., 20)" oninput="calculatePercentage()">
+                    </div>
+                    <div class="input-group">
+                        <label>Value</label>
+                        <input type="number" id="value-input" placeholder="Enter value (e.g., 300)" oninput="calculatePercentage()">
+                    </div>
+                    <div class="formula-box">
+                        <h4>Formula:</h4>
+                        <p>(Percentage ÷ 100) × Value</p>
+                        <p><strong>Example:</strong> (20 ÷ 100) × 300 = 60</p>
+                    </div>
+                </div>
+                <div class="result-panel">
+                    <div class="result-title">Result</div>
+                    <div class="result-value" id="percentage-result">-</div>
+                    <button class="copy-btn" onclick="copyResult('percentage-result')">📋 Copy Result</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Middle Ad -->
+        <div class="ad-container">
+            <div class="ad-label">Advertisement</div>
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-YOUR_PUBLISHER_ID"
+                 data-ad-slot="YOUR_MIDDLE_AD_SLOT"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+            <script>
+                (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+        </div>
+
+        <!-- Percentage Change Calculator -->
+        <div id="change" class="calculator-panel">
+            <div class="calculator-grid">
+                <div>
+                    <h2>Calculate Percentage Change</h2>
+                    <div class="input-group">
+                        <label>Original Value</label>
+                        <input type="number" id="original-input" placeholder="Enter original value (e.g., 80)" oninput="calculateChange()">
+                    </div>
+                    <div class="input-group">
+                        <label>New Value</label>
+                        <input type="number" id="new-input" placeholder="Enter new value (e.g., 100)" oninput="calculateChange()">
+                    </div>
+                    <div class="formula-box">
+                        <h4>Formula:</h4>
+                        <p>((New Value - Original Value) ÷ Original Value) × 100</p>
+                        <p><strong>Example:</strong> ((100 - 80) ÷ 80) × 100 = 25%</p>
+                    </div>
+                </div>
+                <div class="result-panel">
+                    <div class="result-title">Percentage Change</div>
+                    <div class="result-value" id="change-result">-</div>
+                    <div id="change-type" style="margin-top: 10px; font-size: 1.1rem;">No change</div>
+                    <button class="copy-btn" onclick="copyResult('change-result')">📋 Copy Result</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Final Value Calculator -->
+        <div id="final" class="calculator-panel">
+            <div class="calculator-grid">
+                <div>
+                    <h2>Calculate Final Value</h2>
+                    <div class="input-group">
+                        <label>Initial Value</label>
+                        <input type="number" id="initial-input" placeholder="Enter initial value (e.g., 100)" oninput="calculateFinal()">
+                    </div>
+                    <div class="input-group">
+                        <label>Percentage Change (%)</label>
+                        <input type="number" id="percent-change-input" placeholder="Enter percentage (e.g., 20 or -10)" oninput="calculateFinal()">
+                    </div>
+                    <div class="formula-box">
+                        <h4>Formula:</h4>
+                        <p>Initial Value × (1 + Percentage ÷ 100)</p>
+                        <p><strong>Example:</strong> 100 × (1 + 20 ÷ 100) = 120</p>
+                    </div>
+                </div>
+                <div class="result-panel">
+                    <div class="result-title">Final Value</div>
+                    <div class="result-value" id="final-result">-</div>
+                    <button class="copy-btn" onclick="copyResult('final-result')">📋 Copy Result</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- GST Calculator -->
+        <div id="gst" class="calculator-panel">
+            <div class="calculator-grid">
+                <div>
+                    <h2>GST Calculator</h2>
+                    <div class="input-group">
+                        <label>Amount (₹)</label>
+                        <input type="number" id="amount-input" placeholder="Enter amount (e.g., 1000)" oninput="calculateGST()">
+                    </div>
+                    <div class="input-group">
+                        <label>GST Rate (%)</label>
+                        <input type="number" id="gst-rate-input" placeholder="Enter GST rate (e.g., 18)" oninput="calculateGST()">
+                    </div>
+                    <div class="formula-box">
+                        <h4>Formulas:</h4>
+                        <p>GST Amount = (Amount × GST Rate) ÷ 100</p>
+                        <p>Total with GST = Amount + GST Amount</p>
+                        <p><strong>Example:</strong> (1000 × 18) ÷ 100 = ₹180 GST</p>
+                    </div>
+                </div>
+                <div class="result-panel">
+                    <div class="multiple-results">
+                        <div class="result-item">
+                            <h4>GST Amount</h4>
+                            <div class="value" id="gst-amount">-</div>
+                        </div>
+                        <div class="result-item">
+                            <h4>Total with GST</h4>
+                            <div class="value" id="total-with-gst">-</div>
+                        </div>
+                        <div class="result-item">
+                            <h4>Amount without GST</h4>
+                            <div class="value" id="amount-without-gst">-</div>
+                        </div>
+                    </div>
+                    <button class="copy-btn" onclick="copyGSTResults()">📋 Copy All Results</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profit/Loss Calculator -->
+        <div id="profit" class="calculator-panel">
+            <div class="calculator-grid">
+                <div>
+                    <h2>Profit/Loss Calculator</h2>
+                    <div class="input-group">
+                        <label>Cost Price (₹)</label>
+                        <input type="number" id="cost-input" placeholder="Enter cost price (e.g., 800)" oninput="calculateProfit()">
+                    </div>
+                    <div class="input-group">
+                        <label>Selling Price (₹)</label>
+                        <input type="number" id="selling-input" placeholder="Enter selling price (e.g., 1000)" oninput="calculateProfit()">
+                    </div>
+                    <div class="formula-box">
+                        <h4>Formulas:</h4>
+                        <p>Profit/Loss = Selling Price - Cost Price</p>
+                        <p>Profit/Loss % = (Profit/Loss ÷ Cost Price) × 100</p>
+                        <p><strong>Example:</strong> (1000 - 800) = ₹200 profit (25%)</p>
+                    </div>
+                </div>
+                <div class="result-panel">
+                    <div class="multiple-results">
+                        <div class="result-item">
+                            <h4 id="profit-loss-title">Amount</h4>
+                            <div class="value" id="profit-amount">-</div>
+                        </div>
+                        <div class="result-item">
+                            <h4 id="profit-percent-title">Percentage</h4>
+                            <div class="value" id="profit-percentage">-</div>
+                        </div>
+                        <div class="result-item">
+                            <h4>Type</h4>
+                            <div class="value" id="profit-type">No change</div>
+                        </div>
+                    </div>
+                    <button class="copy-btn" onclick="copyProfitResults()">📋 Copy Results</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Ad -->
+        <div class="ad-container">
+            <div class="ad-label">Advertisement</div>
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-YOUR_PUBLISHER_ID"
+                 data-ad-slot="YOUR_BOTTOM_AD_SLOT"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+            <script>
+                (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+        </div>
+    </div>
+
+    <!-- Cookie Consent Banner -->
+    <div class="cookie-consent" id="cookieConsent">
+        <p>We use cookies to personalize content and ads. By using our site, you consent to our use of cookies.</p>
+        <button class="cookie-btn" id="acceptCookies">Accept</button>
+        <button class="cookie-btn decline" id="declineCookies">Decline</button>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // Initialize AdMob (for mobile apps)
+        function initAdMob() {
+            if(typeof admob !== 'undefined') {
+                admob.initialize({
+                    requestTrackingAuthorization: true,
+                    testingDevices: ['YOUR_TEST_DEVICE_ID']
+                });
+                
+                // Banner Ad
+                admob.BannerAd.create({
+                    adUnitId: 'YOUR_ADMOB_BANNER_AD_UNIT_ID',
+                    position: 'bottom'
+                });
+                
+                // Interstitial Ad
+                let interstitialAd = null;
+                admob.InterstitialAd.create({
+                    adUnitId: 'YOUR_ADMOB_INTERSTITIAL_AD_UNIT_ID'
+                }).then(ad => interstitialAd = ad);
+                
+                // Show ad after 3 calculations
+                let calculationCount = 0;
+                document.querySelectorAll('input').forEach(input => {
+                    input.addEventListener('input', () => {
+                        calculationCount++;
+                        if(calculationCount % 3 === 0 && interstitialAd) {
+                            interstitialAd.show();
+                        }
+                    });
+                });
+            }
+        }
+
+        // Cookie Consent Logic
+        const cookieConsent = document.getElementById('cookieConsent');
+        const acceptCookies = document.getElementById('acceptCookies');
+        const declineCookies = document.getElementById('declineCookies');
+        
+        if (!localStorage.getItem('cookiesAccepted')) {
+            setTimeout(() => cookieConsent.classList.add('show'), 1500);
+        }
+        
+        acceptCookies.addEventListener('click', () => {
+            localStorage.setItem('cookiesAccepted', 'true');
+            cookieConsent.classList.remove('show');
+            loadAds();
+        });
+        
+        declineCookies.addEventListener('click', () => {
+            localStorage.setItem('cookiesAccepted', 'false');
+            cookieConsent.classList.remove('show');
+            document.querySelectorAll('.ad-container').forEach(ad => ad.style.display = 'none');
+        });
+        
+        function loadAds() {
+            if (localStorage.getItem('cookiesAccepted') === 'true') {
+                document.querySelectorAll('.ad-container').forEach(ad => ad.style.display = 'flex');
+            }
+        }
+
+        // Your existing calculator functions
+        let isDarkTheme = false;
+
+        function toggleTheme() {
+            isDarkTheme = !isDarkTheme;
+            const body = document.body;
+            const themeBtn = document.querySelector('.theme-toggle');
+            
+            if (isDarkTheme) {
+                body.classList.add('dark');
+                themeBtn.textContent = '☀️';
+            } else {
+                body.classList.remove('dark');
+                themeBtn.textContent = '🌙';
+            }
+        }
+
+        function showCalculator(type) {
+            // Hide all panels
+            const panels = document.querySelectorAll('.calculator-panel');
+            panels.forEach(panel => panel.classList.remove('active'));
+            
+            // Remove active class from all buttons
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            // Show selected panel
+            document.getElementById(type).classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
+
+        function calculatePercentage() {
+            const percentage = parseFloat(document.getElementById('percentage-input').value) || 0;
+            const value = parseFloat(document.getElementById('value-input').value) || 0;
+            
+            if (percentage && value) {
+                const result = (percentage / 100) * value;
+                document.getElementById('percentage-result').textContent = result.toFixed(2);
+            } else {
+                document.getElementById('percentage-result').textContent = '-';
+            }
+        }
+
+        function calculateChange() {
+            const original = parseFloat(document.getElementById('original-input').value) || 0;
+            const newValue = parseFloat(document.getElementById('new-input').value) || 0;
+            
+            if (original && newValue) {
+                const change = ((newValue - original) / original) * 100;
+                const changeType = change > 0 ? 'Increase' : change < 0 ? 'Decrease' : 'No change';
+                
+                document.getElementById('change-result').textContent = Math.abs(change).toFixed(2) + '%';
+                document.getElementById('change-type').textContent = changeType;
+                document.getElementById('change-type').className = change > 0 ? 'profit' : change < 0 ? 'loss' : 'neutral';
+            } else {
+                document.getElementById('change-result').textContent = '-';
+                document.getElementById('change-type').textContent = 'No change';
+                document.getElementById('change-type').className = 'neutral';
+            }
+        }
+
+        function calculateFinal() {
+            const initial = parseFloat(document.getElementById('initial-input').value) || 0;
+            const percentChange = parseFloat(document.getElementById('percent-change-input').value) || 0;
+            
+            if (initial) {
+                const result = initial * (1 + percentChange / 100);
+                document.getElementById('final-result').textContent = result.toFixed(2);
+            } else {
+                document.getElementById('final-result').textContent = '-';
+            }
+        }
+
+        function calculateGST() {
+            const amount = parseFloat(document.getElementById('amount-input').value) || 0;
+            const gstRate = parseFloat(document.getElementById('gst-rate-input').value) || 0;
+            
+            if (amount && gstRate) {
+                const gstAmount = (amount * gstRate) / 100;
+                const totalWithGst = amount + gstAmount;
+                const amountWithoutGst = amount / (1 + gstRate / 100);
+                
+                document.getElementById('gst-amount').textContent = '₹' + gstAmount.toFixed(2);
+                document.getElementById('total-with-gst').textContent = '₹' + totalWithGst.toFixed(2);
+                document.getElementById('amount-without-gst').textContent = '₹' + amountWithoutGst.toFixed(2);
+            } else {
+                document.getElementById('gst-amount').textContent = '-';
+                document.getElementById('total-with-gst').textContent = '-';
+                document.getElementById('amount-without-gst').textContent = '-';
+            }
+        }
+
+        function calculateProfit() {
+            const cost = parseFloat(document.getElementById('cost-input').value) || 0;
+            const selling = parseFloat(document.getElementById('selling-input').value) || 0;
+            
+            if (cost && selling) {
+                const profitLoss = selling - cost;
+                const profitLossPercent = (profitLoss / cost) * 100;
+                const type = profitLoss > 0 ? 'Profit' : profitLoss < 0 ? 'Loss' : 'No Profit/Loss';
+                
+                document.getElementById('profit-amount').textContent = '₹' + Math.abs(profitLoss).toFixed(2);
+                document.getElementById('profit-percentage').textContent = Math.abs(profitLossPercent).toFixed(2) + '%';
+                document.getElementById('profit-type').textContent = type;
+                
+                const amountEl = document.getElementById('profit-amount');
+                const percentEl = document.getElementById('profit-percentage');
+                const typeEl = document.getElementById('profit-type');
+                
+                const className = profitLoss > 0 ? 'profit' : profitLoss < 0 ? 'loss' : 'neutral';
+                amountEl.className = 'value ' + className;
+                percentEl.className = 'value ' + className;
+                typeEl.className = 'value ' + className;
+                
+                document.getElementById('profit-loss-title').textContent = type + ' Amount';
+                document.getElementById('profit-percent-title').textContent = type + ' Percentage';
+            } else {
+                document.getElementById('profit-amount').textContent = '-';
+                document.getElementById('profit-percentage').textContent = '-';
+                document.getElementById('profit-type').textContent = 'No change';
+            }
+        }
+
+        function copyResult(elementId) {
+            const result = document.getElementById(elementId).textContent;
+            if (result && result !== '-') {
+                navigator.clipboard.writeText(result).then(() => {
+                    showToast('Result copied to clipboard!');
+                });
+            }
+        }
+
+        function copyGSTResults() {
+            const gstAmount = document.getElementById('gst-amount').textContent;
+            const totalWithGst = document.getElementById('total-with-gst').textContent;
+            const amountWithoutGst = document.getElementById('amount-without-gst').textContent;
+            
+            const results = `GST Amount: ${gstAmount}\nTotal with GST: ${totalWithGst}\nAmount without GST: ${amountWithoutGst}`;
+            navigator.clipboard.writeText(results).then(() => {
+                showToast('All GST results copied to clipboard!');
+            });
+        }
+
+        function copyProfitResults() {
+            const amount = document.getElementById('profit-amount').textContent;
+            const percentage = document.getElementById('profit-percentage').textContent;
+            const type = document.getElementById('profit-type').textContent;
+            
+            const results = `${type} Amount: ${amount}\n${type} Percentage: ${percentage}`;
+            navigator.clipboard.writeText(results).then(() => {
+                showToast('Profit/Loss results copied to clipboard!');
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Initialize everything when DOM loads
+        document.addEventListener('DOMContentLoaded', () => {
+            initAdMob();
+            loadAds();
+            
+            // Initialize calculator functions
+            calculatePercentage();
+            calculateChange();
+            calculateFinal();
+            calculateGST();
+            calculateProfit();
+        });
+    </script>
+</body>
+</html>
